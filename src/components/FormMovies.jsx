@@ -2,7 +2,8 @@ import { useForm } from "react-hook-form";
 import { useSelector } from "react-redux";
 import { addMoviesG, updateMoviesG } from "../store/slices/movies.slice";
 import { useDispatch } from "react-redux";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import Confetti from '../utils/Confetti';
 
 const FormMovies = ({ updateInfo, setUpdateInfo, nav, handleNav }) => {
   const {
@@ -13,42 +14,45 @@ const FormMovies = ({ updateInfo, setUpdateInfo, nav, handleNav }) => {
     handleSubmit,
   } = useForm();
 
+  
+
   const dispatch = useDispatch();
 
+  const [showConfetti, setShowConfetti] = useState(true);
   const movies = useSelector((reducer) => reducer.movies);
+  
 
   const genres = [
-    { value: "Action" },
-    { value: "Drama" },
-    { value: "Romance" },
-    { value: "Terror" },
-    { value: "Sci-fi" },
-    { value: "Anime" },
-    { value: "Classic" },
-    { value: "Police" },
+    "Action",
+    "Drama",
+    "Romance",
+    "Terror",
+    "Sci-fi",
+    "Anime",
+    "Classic",
+    "Police",
   ];
-
-  const ratings = [
-    { value: 1, label: "1 estrella" },
-    { value: 2, label: "2 estrellas" },
-    { value: 3, label: "3 estrellas" },
-    { value: 4, label: "4 estrellas" },
-    { value: 5, label: "5 estrellas" },
-  ];
+  const ratings = [1, 2, 3, 4, 5];
 
   useEffect(() => {
     reset(updateInfo);
   }, [updateInfo]);
 
+  const generateUniqueId = () => {
+    return `movie_${new Date().getTime()}_${Math.floor(Math.random() * 1000)}`;
+  };
+
   const submit = (data) => {
     // console.log(JSON.stringify(data));
+    // 
+    
     if (data.id) {
       //Update
       dispatch(updateMoviesG({ id: data.id, updatedMovie: data }));
       setUpdateInfo();
     } else {
       //Create
-      data.id = new Date().toLocaleTimeString() + data.name;
+      data.id = generateUniqueId();
       dispatch(addMoviesG(data));
     }
 
@@ -64,77 +68,91 @@ const FormMovies = ({ updateInfo, setUpdateInfo, nav, handleNav }) => {
     });
   };
 
+  // setShowConfetti(showConfetti)
+
+  const getGenreOptions = () => {
+    return genres.map((genre, index) => (
+      <option key={index} value={genre}>
+        {genre}
+      </option>
+    ));
+  };
+
+  const getRatingOptions = () => {
+    return ratings.map((rating, index) => (
+      <option key={index} value={rating}>
+        {`${rating} estrella${rating !== 1 ? "s" : ""}`}
+      </option>
+    ));
+  };
+
   return (
     <div
       className={`${
         nav ? "left-0" : "left-full sm:-left-96"
-      } fixed w-full sm:w-96 top-0 h-full border-r border-r-gray-900 bg-[#00df9a] transition-all duration-300 z-10`}
+      } fixed top-0 z-10 h-full w-full border-r border-r-gray-900 bg-[#00df9a] transition-all duration-300 sm:w-96`}
     >
       <form
-        className="max-w-60 sm:max-w-80 bg-gray-100 shadow-xl border-solid border-10 border-gray-200 rounded-3xl mx-auto mt-10 py-6 px-4 select-none"
+        className="border-10 mx-auto mt-10 w-full max-w-60 select-none rounded-3xl border-solid border-gray-200 bg-gray-100 px-4 py-6 shadow-2xl sm:max-w-80"
         onSubmit={handleSubmit(submit)}
       >
         <main className="my-4">
-          <h2 className="text-center mb-4 md:text-4xl sm:text-3xl text-2xl font-bold md:py-6">
+          <h2 className="mb-4 text-center text-2xl font-bold sm:text-3xl md:py-6 md:text-4xl">
             Form Movies
           </h2>
           <div
             onClick={handleNav}
-            className="absolute text-3xl text-gray-500 font-bold top-1 right-3 hover:text-red-600 hover:scale-105"
+            className="absolute right-3 top-1 text-3xl font-bold text-gray-500 hover:scale-105 hover:text-red-600"
           >
             x
           </div>
-          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mt-0.5">
-            <label className="font-semibold w-1/4" htmlFor="name">
+          <div className="mt-0.5 flex flex-col sm:flex-row sm:items-center sm:justify-between">
+            <label className="w-1/4 font-semibold" htmlFor="name">
               Name
             </label>
             <input
-              className="rounded-md border-solid border-2 border-gray-300 outline-0 w-full sm:w-3/4 p-1"
+              className="w-full rounded-md border-2 border-solid border-gray-300 p-1 outline-0 sm:w-3/4"
               {...register("name", { required: true, maxLength: 40 })}
               type="text"
               id="name"
               autoComplete="name"
             />
           </div>
-          <small className="sm:ml-20 text-xs text-red-600">
+          <small className="text-xs text-red-600 sm:ml-20">
             {errors.name?.type === "required" && "* Name is required"}
             {errors.name?.type === "maxLength" &&
               "* Name entered is more than 40 characters"}
           </small>
-          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mt-0.5">
-            <label className="font-semibold w-1/4" htmlFor="duration">
+          <div className="mt-0.5 flex flex-col sm:flex-row sm:items-center sm:justify-between">
+            <label className="w-1/4 font-semibold" htmlFor="duration">
               Duration
             </label>
             <input
-              className="rounded-md border-solid border-2 border-gray-300 outline-0 w-full sm:w-3/4 p-1"
+              className="w-full rounded-md border-2 border-solid border-gray-300 p-1 outline-0 sm:w-3/4"
               {...register("duration", { required: true })}
               type="text"
               id="duration"
             />
           </div>
-          <small className="sm:ml-20 text-xs text-red-600">
+          <small className="text-xs text-red-600 sm:ml-20">
             {errors.duration?.type === "required" && "* Duration is required"}
           </small>
-          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mt-0.5">
-            <label className="font-semibold w-1/4" htmlFor="genre">
+          <div className="mt-0.5 flex flex-col sm:flex-row sm:items-center sm:justify-between">
+            <label className="w-1/4 font-semibold" htmlFor="genre">
               Genre
             </label>
             <select
-              className="rounded-md border-solid border-2 border-gray-300 outline-0 w-full sm:w-3/4 p-1"
+              className="w-full rounded-md border-2 border-solid border-gray-300 p-1 outline-0 sm:w-3/4"
               name="genre"
               id="genre"
               {...register("genre")}
             >
               <option value="">Select genre...</option>
-              {genres.map((genre, index) => (
-                <option key={index} value={genre.value}>
-                  {genre.value}
-                </option>
-              ))}
+              {getGenreOptions()}
             </select>
             {watch("genre") === "" && (
               <input
-                className="rounded-md border-solid border-2 border-gray-300 outline-0 w-full sm:w-3/4 p-1"
+                className="w-full rounded-md border-2 border-solid border-gray-300 p-1 outline-0 sm:w-3/4"
                 type="text"
                 hidden
                 {...register("showGenre", {
@@ -143,83 +161,79 @@ const FormMovies = ({ updateInfo, setUpdateInfo, nav, handleNav }) => {
               />
             )}
           </div>
-          <small className="sm:ml-20 text-xs text-red-600">
+          <small className="text-xs text-red-600 sm:ml-20">
             {errors.showGenre?.type === "required" && "* Genre is required"}
           </small>
-          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mt-0.5">
-            <label className="font-semibold w-1/4" htmlFor="director">
+          <div className="mt-0.5 flex flex-col sm:flex-row sm:items-center sm:justify-between">
+            <label className="w-1/4 font-semibold" htmlFor="director">
               Director
             </label>
             <input
-              className="rounded-md border-solid border-2 border-gray-300 outline-0 w-full sm:w-3/4 p-1"
+              className="w-full rounded-md border-2 border-solid border-gray-300 p-1 outline-0 sm:w-3/4"
               {...register("director", { required: true })}
               type="text"
               id="director"
             />
           </div>
-          <small className="sm:ml-20 text-xs text-red-600">
+          <small className="text-xs text-red-600 sm:ml-20">
             {errors.director?.type === "required" && "* Director is required"}
           </small>
-          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mt-0.5">
-            <label className="font-semibold w-1/4" htmlFor="release_date">
+          <div className="mt-0.5 flex flex-col sm:flex-row sm:items-center sm:justify-between">
+            <label className="w-1/4 font-semibold" htmlFor="release_date">
               Release
             </label>
             <input
-              className="rounded-md border-solid border-2 border-gray-300 outline-0 w-full sm:w-3/4 p-1"
+              className="w-full rounded-md border-2 border-solid border-gray-300 p-1 outline-0 sm:w-3/4"
               {...register("release_date", { required: true })}
               type="date"
               id="release_date"
             />
           </div>
-          <small className="sm:ml-20 text-xs text-red-600">
+          <small className="text-xs text-red-600 sm:ml-20">
             {errors.release_date?.type === "required" &&
               "* Release Date is required"}
           </small>
-          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mt-0.5">
-            <label className="font-semibold w-1/4" htmlFor="image">
+          <div className="mt-0.5 flex flex-col sm:flex-row sm:items-center sm:justify-between">
+            <label className="w-1/4 font-semibold" htmlFor="image">
               Image
             </label>
             <input
-              className="rounded-md border-solid border-2 border-gray-300 outline-0 w-full sm:w-3/4 p-1"
+              className="w-full rounded-md border-2 border-solid border-gray-300 p-1 outline-0 sm:w-3/4"
               {...register("imageUrl", { required: true })}
               type="text"
               id="image"
             />
           </div>
-          <small className="sm:ml-20 text-xs text-red-600">
+          <small className="text-xs text-red-600 sm:ml-20">
             {errors.imageUrl?.type === "required" && "* Image URL is required"}
           </small>
-          <div className="flex flex-row justify-between items-center mt-4 sm:mt-0.5">
+          <div className="mt-4 flex flex-row items-center justify-between sm:mt-0.5">
             <input
-              className="w-6 h-6 mr-10 accent-emerald-500 bg-gray-100 border-gray-100"
+              className="mr-10 h-6 w-6 border-gray-100 bg-gray-100 accent-emerald-500"
               {...register("premiere")}
               type="checkbox"
               id="premiere"
             />
-            <label className="font-semibold w-3/4" htmlFor="premiere">
+            <label className="w-3/4 font-semibold" htmlFor="premiere">
               Is it premiere?
             </label>
           </div>
-          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mt-4">
-            <label className="font-semibold w-1/4" htmlFor="rating">
+          <div className="mt-4 flex flex-col sm:flex-row sm:items-center sm:justify-between">
+            <label className="w-1/4 font-semibold" htmlFor="rating">
               Rating
             </label>
             <select
-              className="rounded-md border-solid border-2 border-gray-300 outline-0 w-full sm:w-3/4 p-1"
+              className="w-full rounded-md border-2 border-solid border-gray-300 p-1 outline-0 sm:w-3/4"
               name="rating"
               id="rating"
               {...register("rating")}
             >
               <option value="">Select rating...</option>
-              {ratings.map((rating, index) => (
-                <option key={index} value={rating.value}>
-                  {rating.label}
-                </option>
-              ))}
+              {getRatingOptions()}
             </select>
             {watch("rating") === "" && (
               <input
-                className="rounded-md border-solid border-2 border-gray-300 outline-0 w-full sm:w-3/4 p-1"
+                className="w-full rounded-md border-2 border-solid border-gray-300 p-1 outline-0 sm:w-3/4"
                 type="text"
                 hidden
                 {...register("showRating", {
@@ -228,16 +242,17 @@ const FormMovies = ({ updateInfo, setUpdateInfo, nav, handleNav }) => {
               />
             )}
           </div>
-          <small className="sm:ml-20 text-xs text-red-600">
+          <small className="text-xs text-red-600 sm:ml-20">
             {errors.showRating?.type === "required" && "* Rating is required"}
           </small>
         </main>
-        <footer className="flex justify-center items-center">
-          <button className="bg-[#00df9a] w-[200px] shadow-xl rounded-md font-bold my-1 mx-auto py-3">
+        <footer className="flex items-center justify-center">
+          <button className="mx-auto my-1 w-[200px] rounded-md bg-[#00df9a] py-3 font-bold shadow-2xl">
             {updateInfo ? "Update movie" : "Add movie"}
           </button>
         </footer>
       </form>
+      {showConfetti && <Confetti />}
     </div>
   );
 };

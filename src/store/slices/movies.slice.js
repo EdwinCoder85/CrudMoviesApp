@@ -13,16 +13,18 @@ const moviesSlice = createSlice({
     /* [...state, action.payload] es almacenar el valor  ingresado por el usuario al arreglo */
     setMoviesG: (state, action) => action.payload,
     addMoviesG: (state, action) => [...state, action.payload],
-    deleteMoviesG: (state, action) => state.filter(movie => movie.id !== action.payload),
+    deleteMoviesG: (state, action) =>
+      state.filter((movie) => movie.id !== action.payload),
     updateMoviesG: (state, action) => {
-      const { id, updatedMovie } = action.payload
-      return state.map(movie =>
-        movie.id === id ?  {...movie, ...updatedMovie} : movie
-      )
+      const { id, updatedMovie } = action.payload;
+      return state.map((movie) =>
+        movie.id === id ? { ...movie, ...updatedMovie } : movie,
+      );
     },
-  }
+  },
 });
 
-export const { setMoviesG, addMoviesG, deleteMoviesG, updateMoviesG } = moviesSlice.actions;
+export const { setMoviesG, addMoviesG, deleteMoviesG, updateMoviesG } =
+  moviesSlice.actions;
 /* reducer es el representante en el store */
 export default moviesSlice.reducer;
